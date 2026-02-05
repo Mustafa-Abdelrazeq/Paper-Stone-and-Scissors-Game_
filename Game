@@ -1,0 +1,244 @@
+// Game [Paper,Stone,Scissor].cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+
+#include <iostream>
+#include <iomanip>
+#include <cmath>
+
+
+using namespace std;
+
+int RandomNumber(int From, int To)
+{
+	int randNum = rand() % (To - From + 1) + From;
+	return randNum;
+}
+int NumberInRange(int Start, int End, int num) {
+
+	return(num >= Start && num <= End);
+}
+int HowManyTriesToPlay(int From, int To, string Msg = "") {
+	int num = 0;
+	do
+	{
+		cout << Msg;
+		cin >> num;
+
+	} while (!NumberInRange(From, To, num));
+	return num;
+}
+
+void PrintRoundChoices() {
+	cout << "Paper[1] - Stone[2] - Scissor[3]: ";
+}
+enum enChoice {
+	Paper = 1, Stone = 2, Scissor = 3
+};
+enum enWinner {
+	Player = 1, Computer = 2, Draw = 3
+};
+enChoice PlayerChoice() {
+	int IntChoice = HowManyTriesToPlay(1, 3);
+	return (enChoice)IntChoice;
+}
+
+// Using Random Function Number
+enChoice ComputerChoice() {
+	int RandomIntChoice = RandomNumber(1, 3);
+	return (enChoice)RandomIntChoice;
+}
+
+//WhoWonRound Kind Of Enum func
+//receive 2 enums and Compare With Them According To Game Cratria
+enWinner WhoWonRound(enChoice UserChoice , enChoice ComputerChoice) {
+
+	if (UserChoice == ComputerChoice)
+		return enWinner::Draw;
+
+	else if ((UserChoice == enChoice::Paper && ComputerChoice == enChoice::Stone) ||
+		(UserChoice == enChoice::Stone && ComputerChoice == enChoice::Scissor) ||
+		(UserChoice == enChoice::Scissor && ComputerChoice == enChoice::Paper))
+		return enWinner::Player;
+	// if Fail To Achieve Any Choice before Will Choose Computer
+	return enWinner::Computer;
+
+}
+
+string StringWinner(enWinner WhoWonRound) {
+	string ArrayOfWinner[3] = { "Player", "Computer" , "Draw 'No Winner'" };
+	return ArrayOfWinner[WhoWonRound - 1]; //=> [- 1] To Manage the index 
+}
+
+string StringChoice(enChoice Choice) {
+	string ArrayOfChoice[3] = { "Paper", "Stone" , "Scissor" };
+	return ArrayOfChoice[Choice - 1]; //=> [- 1] To Manage the index 
+}
+
+struct stRound
+{
+	enChoice PlayerChoice;
+	enChoice ComputerChoice;
+	enWinner WinnerOfRound;
+	string StringPlayerChoice;
+	string StirngComputerChoice;
+	string StringWinnerOfRound;
+
+};
+
+struct stGameResults
+{
+	int NumberOfRounds = 0;
+	int PlayerWon = 0;
+	int ComputerWon = 0;
+	int Draw = 0;
+	enWinner WhoWinGame;
+	string StringWinnerOfGame;
+
+};
+
+void ResetScreen() {
+	system("color 0f");
+	system("cls");
+}
+
+int  ScreenWinner(enWinner WhoWonRound) {
+	if (WhoWonRound == enWinner::Draw)
+		return system("color 6f");
+	else if (WhoWonRound == enWinner::Player)
+		return system("color 2f");
+
+	return system("color 4f");
+}
+
+stRound FillSturctRound() {
+	stRound Round;
+	PrintRoundChoices();
+	Round.PlayerChoice =  PlayerChoice();
+	Round.ComputerChoice = ComputerChoice();
+	Round.WinnerOfRound = WhoWonRound(Round.PlayerChoice, Round.ComputerChoice);
+	Round.StringPlayerChoice = StringChoice(Round.PlayerChoice);
+	Round.StirngComputerChoice = StringChoice(Round.ComputerChoice);
+	Round.StringWinnerOfRound = StringWinner(Round.WinnerOfRound);
+	
+	//return Round;
+	return { Round.PlayerChoice  ,Round.ComputerChoice , Round.WinnerOfRound ,Round.StringPlayerChoice ,
+			Round.StirngComputerChoice , Round.StringWinnerOfRound };
+}
+
+void PrintRoundResult(stRound Round) {
+
+
+	cout << "\n" << setw(15) << "Player Choice" << ": ( " << Round.StringPlayerChoice << " )\n";
+	cout << setw(15) << "Computer Choice"<< ": ( "<< Round.StirngComputerChoice << " )\n";
+	ScreenWinner(Round.WinnerOfRound);
+	cout << setw(15) <<"Winner Of Round"<<": # " << Round.StringWinnerOfRound << " #\n"; 
+
+
+	cout << "________________________________\n";
+}
+
+//Winner Of Game At All
+enWinner WhoWOnAllGame(stGameResults GameResults) {
+
+	if (GameResults.PlayerWon == GameResults.ComputerWon)
+		return enWinner::Draw;
+	else if (GameResults.PlayerWon > GameResults.ComputerWon)
+		return enWinner::Player;
+
+	return enWinner::Computer;
+}
+
+// Play A Game With Rounds
+void PlayGame(stRound GameArray[99], int Length) {
+	stRound Round;
+
+	for (int i = 0; i < Length; i++)
+	{
+		cout << "\n"<<setw(20)<<"Round(" <<i+1<< ")\n";
+		Round = FillSturctRound();
+		PrintRoundResult(Round);
+		GameArray[i] = Round;
+	}
+
+}
+
+// Collect Data Of All Rounds
+stGameResults CollectGameResult(stRound GameArray[99], int Length) {
+	stGameResults GameResults;
+	GameResults.NumberOfRounds = Length;
+
+	for (int i = 0; i < Length; i++)
+	{
+		if (GameArray[i].WinnerOfRound == enWinner::Player)
+			GameResults.PlayerWon++;
+		else if (GameArray[i].WinnerOfRound == enWinner::Computer)
+			GameResults.ComputerWon++;
+		else
+			GameResults.Draw++;
+
+	}
+	return { GameResults.NumberOfRounds, GameResults.PlayerWon , GameResults.ComputerWon , GameResults.Draw ,WhoWOnAllGame(GameResults) , StringWinner (WhoWOnAllGame(GameResults))};
+}
+
+void ShowGameResult(stGameResults GameResults) {
+	cout <<setw(80)<< "__________________________________\n\n";
+
+	cout <<setw(70)<< "G A M E  O V E R\n";
+	cout <<setw(80)<< "__________________________________\n\n";
+	cout << setw(67) << "Rounds Count : " << GameResults.NumberOfRounds << endl;
+	cout <<setw(67)<< "Player : " << GameResults.PlayerWon<<endl;
+	cout <<setw(67)<< "Computer : " << GameResults.ComputerWon << endl;
+	cout <<setw(67)<< "Draw : " << GameResults.Draw << endl;
+	cout <<setw(67)<< "Winner is  : " << GameResults.StringWinnerOfGame << endl;
+
+
+
+}
+
+void PrintDetailsOfAllRoundsDone(stRound GameArray[99], int Length){
+	char ShowAllRoundResults = 'y';
+	cout << "Do You Want Show All Game Round y/n : ";
+	cin >> ShowAllRoundResults;
+	if (ShowAllRoundResults == 'Y' || ShowAllRoundResults == 'y') 
+		for (int i = 0; i < Length; i++)
+		{
+			cout << "Round : " << i + 1 << endl;
+			cout << "Player Choice : " << GameArray[i].StringPlayerChoice << endl;
+			cout << "Computer Choice : " << GameArray[i].StirngComputerChoice << endl;
+			cout << "Winner : " << GameArray[i].StringWinnerOfRound << endl;
+			cout << "_______________________________\n";
+		}
+}
+
+void StartGame() {
+	char PlayAgain = 'y';
+	
+	do
+	{
+		ResetScreen();
+		stRound GameArray[99];
+		stGameResults GameResults;
+		int Length = HowManyTriesToPlay(1, 10, "How Many Times Want Play : ");
+		PlayGame(GameArray, Length);
+		GameResults = CollectGameResult(GameArray, Length);
+		ShowGameResult(GameResults);
+		PrintDetailsOfAllRoundsDone(GameArray, Length);
+		cout << "Do Want Play Again : y/n : ";
+		cin >> PlayAgain;
+	} while (PlayAgain == 'y' || PlayAgain== 'Y');
+
+}
+
+int main()
+{
+	
+	srand((unsigned)time(NULL)); 
+	StartGame();
+
+		
+
+
+
+	return 0;
+}
